@@ -15,7 +15,7 @@ var Command string
 var Help bool
 
 func init() {
-        flag.StringVarP(&OutputFile, "output", "o", "", "File to write backup to")
+        flag.StringVarP(&OutputFile, "output", "o", "", "Name of file to write backup to. Program will add extension")
 	flag.BoolVarP(&TLSCertCheckDisable, "tlsdisable", "t", false, "Disable TLS Certificate Check")
 	flag.StringVarP(&Username, "username", "u", "", "Set username to login to device, program will ask for it if not supplied")
 	flag.StringVarP(&Password, "password", "p", "", "Set password to login to device, program will ask for it if not supplied")
