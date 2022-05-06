@@ -7,6 +7,8 @@ type LoginError struct {
         Message string
 }
 
+// TODO add option to format for systemd loki ingestion
+
 func (e LoginError) Error() string {
         return fmt.Sprintf("login failed: %s", e.Message)
 }

@@ -21,6 +21,8 @@ const (
         ERR_SAVE     int = 7
 )
 
+// TODO add option to format error output for systemd loki log ingestion
+
 func main() {
 	flag.Parse()
 
