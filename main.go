@@ -2,9 +2,10 @@ package main
 
 import (
 	"bufio"
-	"github.com/mmackay055/edgeos/options"
-	"github.com/mmackay055/edgeos/edgedev"
 	"fmt"
+	"github.com/mmackay055/edgeos/edgedev"
+	"github.com/mmackay055/edgeos/logging"
+	"github.com/mmackay055/edgeos/options"
 	flag "github.com/spf13/pflag"
 	"golang.org/x/term"
 	"os"
@@ -17,11 +18,9 @@ const (
 	ERR_LOGIN    int = 3
 	ERR_DEVICE   int = 4
 	ERR_COMMAND  int = 5
-        ERR_BACKUP   int = 6
-        ERR_SAVE     int = 7
+	ERR_BACKUP   int = 6
+	ERR_SAVE     int = 7
 )
-
-// TODO add option to format error output for systemd loki log ingestion
 
 func main() {
 	flag.Parse()
@@ -50,51 +49,57 @@ func main() {
 		}
 	}
 
+	// get logging formatter
+	logger := &logging.Logger{}
+	logger.SetFormat(options.LogFormat.Get())
+
 	args := flag.Args()
 
 	// get hostname
 	if len(args) < 1 {
-		errorFound("error require device hostname/IP", ERR_HOSTNAME)
+		errorFound(logger.LogErr("require device hostname/IP"),
+			ERR_HOSTNAME)
 	}
 	options.Hostname = args[0]
 
 	// get command
 	if len(args) < 2 {
-		errorFound("error require command", ERR_COMMAND)
+		errorFound(logger.LogErr("require command"),
+			ERR_COMMAND)
 	}
 	options.Command = args[1]
 
 	//select device
-	device := options.Device.GetDevice()
-        edgedev.DisableTLSCertCheck(device, options.TLSCertCheckDisable)
+	device := options.Device.Get()
+	edgedev.DisableTLSCertCheck(device, options.TLSCertCheckDisable)
 
 	// Login to device
-	if err := edgedev.Login(device, 
-                options.Hostname, 
-                options.Username, 
-                options.Password); err != nil {
+	if err := edgedev.Login(device,
+		options.Hostname,
+		options.Username,
+		options.Password); err != nil {
 
-		errorFound(fmt.Sprintf("error login: %s", err),
-                        ERR_LOGIN)
+		errorFound(logger.LogErr(err.Error()),
+			ERR_LOGIN)
 	}
 
-        // execute command
+	// execute command
 	switch options.Command {
 	case "backup":
-		if err := edgedev.BackUp(device, 
-                                        options.OutputFile); err != nil {
+		if err := edgedev.BackUp(device,
+			options.OutputFile); err != nil {
 
-			errorFound(fmt.Sprintf("error backup: %s", err),
-                                                ERR_BACKUP)
+			errorFound(logger.LogErr(err.Error()),
+				ERR_BACKUP)
 		}
-        case "save":
-                if err := edgedev.Save(device); err != nil {
-			errorFound(fmt.Sprintf("error save: %s", err),
-                                  ERR_SAVE)
+	case "save":
+		if err := edgedev.Save(device); err != nil {
+			errorFound(logger.LogErr(err.Error()),
+				ERR_SAVE)
 		}
 	default:
-		errorFound("error invalid command",
-                        ERR_COMMAND)
+		errorFound(logger.LogErr("error invalid command"),
+			ERR_COMMAND)
 	}
 
 }

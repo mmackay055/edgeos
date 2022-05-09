@@ -56,7 +56,7 @@ func (d *EdgeDevOpt) setDevice(devname string) error {
 	return nil
 }
 
-func (d EdgeDevOpt) GetDevice() EdgeDev {
+func (d EdgeDevOpt) Get() EdgeDev {
 	return d.dev
 }
 
